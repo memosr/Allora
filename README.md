@@ -91,3 +91,28 @@ ardından önceden aldığınız 24 kelimeyi giriniz
 > Allora cüzdanımıza token [buradan](https://faucet.testnet-1.testnet.allora.network/) alıyoruz. Sıraya alıp gönderme yapabiliyor. Direkt token gelmeyebiliyor.
 
 #
+
+<h1 align="center">Workerlerin kurulumu</h1>
+
+```console
+cd $HOME
+git clone https://github.com/allora-network/basic-coin-prediction-node
+
+cd basic-coin-prediction-node
+
+# dosyaları oluşturalım
+mkdir worker-data
+mkdir head-data
+
+# dosya izinleri
+sudo chmod -R 777 worker-data
+sudo chmod -R 777 head-data
+
+# head keyimizi oluşturalım
+sudo docker run -it --entrypoint=bash -v ./head-data:/data alloranetwork/allora-inference-base:latest -c "mkdir -p /data/keys && (cd /data/keys && allora-keys)"
+
+# worker keyimizi oluşturalım
+sudo docker run -it --entrypoint=bash -v ./worker-data:/data alloranetwork/allora-inference-base:latest -c "mkdir -p /data/keys && (cd /data/keys && allora-keys)"
+```
+
+#

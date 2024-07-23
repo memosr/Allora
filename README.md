@@ -1,6 +1,6 @@
 <h1 align="center">Allora</h1>
 
-> Gm, yeni bir Node Point > All ile buluşuyoruz.
+> Yeni bir Node Point > All ile buluşuyoruz.
 
 > Allora'nın worker/price bot'unu kuruyoruz bugün.
 
@@ -16,9 +16,7 @@
 
 <h1 align="center">Donanım</h1>
 
-> Açıkcası ben sunucu almadım, airchains station'umun içine kurdum.
-
-> Yinede donanım olarak minimum `2 CPU 4 RAM` iyidir.
+> Donanım olarak minimum `2 CPU 4 RAM` iyidir.
 
 #
 

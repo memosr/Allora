@@ -116,3 +116,205 @@ sudo docker run -it --entrypoint=bash -v ./worker-data:/data alloranetwork/allor
 ```
 
 #
+
+
+```console
+cat head-data/keys/identity
+```
+
+> Çıktının sonu root kısmı ile birleşik gelebilir kopyalarken dikkat edelim.
+
+> Keyimizi saklayalım lütfen.
+
+```console
+# docker-compose.yml temizleyeliim
+rm -rf docker-compose.yml
+```
+
+#
+
+<h1 align="center">Alloraya bağlanalım</h1>
+
+```console
+# yeni docker-compose.yml oluşturacağız alttaki komutla
+nano docker-compose.yml
+```
+
+> Alttaki kod bloğunu direkt sunucumuza komple yapıştıralım
+
+> ve henüz kaydetmeden bu reponun aşağısına gidelim.
+
+```console
+version: '3'
+
+services:
+  inference:
+    container_name: inference-basic-eth-pred
+    build:
+      context: .
+    command: python -u /app/app.py
+    ports:
+      - "8000:8000"
+    networks:
+      eth-model-local:
+        aliases:
+          - inference
+        ipv4_address: 172.22.0.4
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/inference/ETH"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+    volumes:
+      - ./inference-data:/app/data
+
+  updater:
+    container_name: updater-basic-eth-pred
+    build: .
+    environment:
+      - INFERENCE_API_ADDRESS=http://inference:8000
+    command: >
+      sh -c "
+      while true; do
+        python -u /app/update_app.py;
+        sleep 24h;
+      done
+      "
+    depends_on:
+      inference:
+        condition: service_healthy
+    networks:
+      eth-model-local:
+        aliases:
+          - updater
+        ipv4_address: 172.22.0.5
+
+  worker:
+    container_name: worker-basic-eth-pred
+    environment:
+      - INFERENCE_API_ADDRESS=http://inference:8000
+      - HOME=/data
+    build:
+      context: .
+      dockerfile: Dockerfile_b7s
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - |
+        if [ ! -f /data/keys/priv.bin ]; then
+          echo "Generating new private keys..."
+          mkdir -p /data/keys
+          cd /data/keys
+          allora-keys
+        fi
+        # Change boot-nodes below to the key advertised by your head
+        allora-node --role=worker --peer-db=/data/peerdb --function-db=/data/function-db \
+          --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+          --private-key=/data/keys/priv.bin --log-level=debug --port=9011 \
+          --boot-nodes=/ip4/172.22.0.100/tcp/9010/p2p/head-id \
+          --topic=allora-topic-1-worker \
+          --allora-chain-key-name=testkey \
+          --allora-chain-restore-mnemonic='24 KELIME BURAYA' \
+          --allora-node-rpc-address=https://allora-rpc.testnet-1.testnet.allora.network/ \
+          --allora-chain-topic-id=1
+    volumes:
+      - ./worker-data:/data
+    working_dir: /data
+    depends_on:
+      - inference
+      - head
+    networks:
+      eth-model-local:
+        aliases:
+          - worker
+        ipv4_address: 172.22.0.10
+
+  head:
+    container_name: head-basic-eth-pred
+    image: alloranetwork/allora-inference-base-head:latest
+    environment:
+      - HOME=/data
+    entrypoint:
+      - "/bin/bash"
+      - "-c"
+      - |
+        if [ ! -f /data/keys/priv.bin ]; then
+          echo "Generating new private keys..."
+          mkdir -p /data/keys
+          cd /data/keys
+          allora-keys
+        fi
+        allora-node --role=head --peer-db=/data/peerdb --function-db=/data/function-db  \
+          --runtime-path=/app/runtime --runtime-cli=bls-runtime --workspace=/data/workspace \
+          --private-key=/data/keys/priv.bin --log-level=debug --port=9010 --rest-api=:6000
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./head-data:/data
+    working_dir: /data
+    networks:
+      eth-model-local:
+        aliases:
+          - head
+        ipv4_address: 172.22.0.100
+
+
+networks:
+  eth-model-local:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+volumes:
+  inference-data:
+  worker-data:
+  head-data:
+````
+
+-id` ve `24 KELIME BURAYA` kısımlarını değiştirelim.
+
+> head-id cat komutumuz ile almıştık, 24 kelimeyi cüzdanı oluştururken aldık.
+
+> Akabinde CTRL X Y ENTER ile kaydetip çıkalım.
+
+<h1 align="center">Workerlerimizi başlatma</h1>
+
+```console
+docker compose build
+docker compose up -d
+```
+
+#
+
+> `docker ps` ile aratıp node-worker'imizin container id'iyi alalım.
+
+
+<img width="444" alt="Ekran Resmi 2024-06-28 12 59 20" src="https://github.com/ruesandora/Allora/assets/101149671/e69e844d-a3da-4b76-9ead-930ce087afb9">
+
+
+> `docker ps` ile arattığınızda node-worker çıkmıyorsa `docker ps -a` ile deneyin.
+#
+
+düzenleyip aratalım.
+
+<img width="674" alt="Ekran Resmi 2024-06-28 13 00 23" src="https://github.com/ruesandora/Allora/assets/101149671/389e73a4-9e5f-4701-9b79-d22b7e5654bb">
+
+> Success çıktımızı aldıysak tebrikler.
+
+#
+
+> Allora puanlarımız her gün güncellenerek [buraya](https://app.allora.network?ref=eyJyZWZlcnJlcl9pZCI6IjBlNWRhMjlmLTc3YjItNDQ2NS1hYTcxLTk0NWI3NjRhMTA0ZiJ9) yansıyacaktır.
+
+
+
+#
+
+![image](https://github.com/ruesandora/Allora/assets/101149671/5c2f63b6-e831-4d9e-b141-e7edfc1af714)
+
+
+
+
+
+
+

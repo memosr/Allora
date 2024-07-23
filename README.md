@@ -4,7 +4,6 @@
 
 > Allora'nın worker/price bot'unu kuruyoruz bugün.
 
-> Benzer içerikler sohbetler ve güncellemler için [telegramdayız](https://t.me/RuesAnnouncement).
 
 <details>
   <summary> <h1> Yatırımı hakkında </summary> </h1>

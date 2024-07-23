@@ -73,3 +73,21 @@ git clone https://github.com/allora-network/allora-chain.git
 cd allora-chain && make all
 
 # cüzdan oluşturma
+
+allorad keys add CÜZDAN_İSMİ
+# cüzdanınıza bir isim veriniz
+# cüzdan import için
+allorad keys add CÜZDAN_İSMİ --recover
+ardından önceden aldığınız 24 kelimeyi giriniz
+````
+
+
+> Akabinde keplr'a 24 kelimenizi import ediniz 
+
+> Allora ağını keplr'a [buradan](https://explorer.testnet-1.testnet.allora.network/wallet/keplr) ekleyelim.
+
+> Allora dashboard'a [buradan](https://app.allora.network?ref=eyJyZWZlcnJlcl9pZCI6IjBlNWRhMjlmLTc3YjItNDQ2NS1hYTcxLTk0NWI3NjRhMTA0ZiJ9) bağlanıyoruz.
+
+> Allora cüzdanımıza token [buradan](https://faucet.testnet-1.testnet.allora.network/) alıyoruz. Sıraya alıp gönderme yapabiliyor. Direkt token gelmeyebiliyor.
+
+#
